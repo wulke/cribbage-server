@@ -12,3 +12,5 @@
 [example](https://github.com/llyram/Declare)
 [deploying to DigitalOcean](https://coderrocketfuel.com/article/create-and-deploy-an-express-rest-api-to-a-digitalocean-server)
 [deploy & build in DigitalOcean](https://medium.com/@chathula/how-to-set-up-a-ci-cd-pipeline-for-a-node-js-app-with-github-actions-2073201b0df6)
+[jsdoc](https://www.prisma.io/blog/type-safe-js-with-jsdoc-typeSaf3js)
+[vitest](https://vitest.dev/guide/)
