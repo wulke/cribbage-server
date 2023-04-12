@@ -82,14 +82,26 @@ io.on('connection', (socket) => {
   socket.on('player_ready', (gameId, callback) => {
     console.log(`${socket.id} is ready to play ${gameId}`);
     try {
-      GAMES.set(gameId, GAMES.get(gameId).onPlayerReady(socket.id));
-      if (GAMES.get(gameId).allReady()) {
-        GAMES.set(gameId, GAMES.get(gameId).onGameStart());
+      let game = GAMES.get(gameId).onPlayerReady(socket.id);
+      if (game.allReady()) {
+        game = game.onGameStart();
       }
+      GAMES.set(game.id, game);
       io.to(gameId).emit('get_game', GAMES.get(gameId));
     } catch (error) {
       console.error(error);
       io.to(socket.id).emit('notification', `Failed to ready game ${gameId}`);
+    }
+  });
+
+  socket.on('cut_for_dealer', (gameId, cutIndex, callback) => {
+    console.log(`Player ${socket.id} is cutting the ${cutIndex} index in ${gameId}`);
+    try {
+      GAMES.set(gameId, GAMES.get(gameId).onCutForDealer(socket.id, cutIndex));
+      io.to(gameId).emit('get_game', GAMES.get(gameId));
+    } catch (error) {
+      console.error(error);
+      io.to(socket.id).emit('notification', `Failed to cut for dealer in game ${gameId}`);
     }
   });
 
