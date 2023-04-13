@@ -96,5 +96,8 @@ describe('GameState', () => {
       expect(game.state).toStrictEqual(GameState.NEW_HAND);
       expect(game.nextDealer).toStrictEqual(PLAYER_1);
     });
+    it('onCutForDealer() throws an error if a player not in the game attempts to make a cut', async () => {
+      expect(() => game.onCutForDealer(PLAYER_3)).toThrowError(`${PLAYER_3} is not a player in game ${game.id}`);
+    });
   });
 });

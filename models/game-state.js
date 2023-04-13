@@ -59,6 +59,9 @@ class Game {
     if (this.playerCuts[playerId]) {
       throw new Error(`${playerId} already cut for dealer: ${this.playerCuts[playerId]}`);
     }
+    if (!this.players[playerId]) {
+      throw new Error(`${playerId} is not a player in game ${this.id}`);
+    }
     const card = this.deck.pull(cutIndex);
     this.playerCuts[playerId] = card;
     this.#processCutForDealer();
