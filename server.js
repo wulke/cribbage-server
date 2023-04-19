@@ -105,6 +105,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('new_hand', (gameId, callback) => {
+    console.log(`Player ${socket.id} is dealing a new hand`);
+    try {
+      // @todo verify the player === game.nextDealer
+      GAMES.set(gameId, GAMES.get(gameId).onNewHand());
+      io.to(gameId).emit('get_game', GAMES.get(gameId));
+    } catch (error) {
+      console.error(error);
+      io.to(socket.id).emit('notification', 'Failed to deal new hand');
+    }
+  });
+
+  socket.on('throw_to_crib', (gameId, card, callback) => {
+    console.log(`Player ${socket.id} is throwing ${card} to crib in ${gameId}`);
+    try {
+      GAMES.set(gameId, GAMES.get(gameId).onThrowToCrib(socket.id, card));
+      io.to(gameId).emit('get_game', GAMES.get(gameId));
+    } catch (error) {
+      console.error(error);
+      io.to(socket.id).emit('notification', 'Failed to throw card to crib');
+    }
+  });
+
   socket.on('get_game', (id, callback) => {
     console.log(`${socket.id} is pulling game ${id}`);
     const game = GAMES.get(id);

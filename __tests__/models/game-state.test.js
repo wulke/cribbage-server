@@ -6,6 +6,7 @@ const PLAYER_1 = uuid();
 const PLAYER_2 = uuid();
 const PLAYER_3 = uuid();
 
+// @todo add support for parameterized tests for 2/3/4 player games
 describe('GameState', () => {
   let game;
   beforeEach(() => {
@@ -98,6 +99,83 @@ describe('GameState', () => {
     });
     it('onCutForDealer() throws an error if a player not in the game attempts to make a cut', async () => {
       expect(() => game.onCutForDealer(PLAYER_3)).toThrowError(`${PLAYER_3} is not a player in game ${game.id}`);
+    });
+  });
+  describe(GameState.NEW_HAND, () => {
+    beforeEach(() => {
+      game.onPlayerJoin(PLAYER_1);
+      game.onPlayerReady(PLAYER_1);
+      game.onPlayerJoin(PLAYER_2);
+      game.onPlayerReady(PLAYER_2);
+      game.onGameStart();
+      game.deck.reset();
+      game.onCutForDealer(PLAYER_1, 0);
+      game.onCutForDealer(PLAYER_2, 0);
+      expect(game.state).toStrictEqual(GameState.NEW_HAND);
+      expect(game.nextDealer).toStrictEqual(PLAYER_1);
+    });
+    it('Updates to the next dealer in the rotation', async () => {
+      game.onNewHand();
+      expect(game.currentDealer).toStrictEqual(PLAYER_1);
+      expect(game.nextDealer).toStrictEqual(PLAYER_2);
+      expect(game.crib.length).toBe(0);
+    });
+    it('Deals hands and sets game state to "Throw Crib Cards"', async () => {
+      game.onNewHand();
+      Object.entries(game.playerHands).forEach(([p,h]) => {
+        expect(h.length).toStrictEqual(game.CARDS_PER_HAND);
+      });
+      expect(game.deck.size()).toStrictEqual(40); // @todo based on config # of players
+      expect(game.state).toStrictEqual(GameState.THROW_CRIB);
+    });
+  });
+  describe(GameState.THROW_CRIB, () => {
+    beforeEach(() => {
+      game.onPlayerJoin(PLAYER_1);
+      game.onPlayerReady(PLAYER_1);
+      game.onPlayerJoin(PLAYER_2);
+      game.onPlayerReady(PLAYER_2);
+      game.onGameStart();
+      game.deck.reset();
+      game.onCutForDealer(PLAYER_1, 0);
+      game.onCutForDealer(PLAYER_2, 0);
+      game.onNewHand();
+      expect(game.state).toStrictEqual(GameState.THROW_CRIB);
+      expect(game.crib.length).toBe(0);
+    });
+    it('onThrowToCrib() throws an error if player has already thrown max cards', async () => {
+      game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_1][0]);
+      game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_1][0]); // @todo based on config # of players
+      expect(() => game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_1][0])).toThrowError();
+    });
+    it('onThrowToCrib() throws an error if player does not exist in the game', async () => {
+      expect(() => game.onThrowToCrib(PLAYER_3, 0)).toThrowError();
+    });
+    it('onThrowToCrib() throws an error if player does not have the card in their hand', async () => {
+      expect(() => game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_2][0])).toThrowError();
+    });
+    it('Lets players throw to crib and updates game phase to "Cut For Dealer"', async () => {
+      let card = game.playerHands[PLAYER_1][0];
+      game.onThrowToCrib(PLAYER_1, card);
+      expect(game.state).toStrictEqual(GameState.THROW_CRIB);
+      expect(game.crib).toContain(card);
+
+      card = game.playerHands[PLAYER_2][0];
+      game.onThrowToCrib(PLAYER_2, card);
+      expect(game.state).toStrictEqual(GameState.THROW_CRIB);
+      expect(game.crib).toContain(card);
+
+      card = game.playerHands[PLAYER_1][0];
+      game.onThrowToCrib(PLAYER_1, card);
+      expect(game.state).toStrictEqual(GameState.THROW_CRIB);
+      expect(game.crib).toContain(card);
+
+
+      card = game.playerHands[PLAYER_2][0];
+      game.onThrowToCrib(PLAYER_2, card);
+      expect(game.state).toStrictEqual(GameState.CUT_FOR_HAND);
+      expect(game.crib).toContain(card);
+      expect(game.crib.length).toStrictEqual(4);
     });
   });
 });

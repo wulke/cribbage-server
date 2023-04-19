@@ -7,6 +7,7 @@ class Deck {
   cut = (index = Math.floor(Math.random() * this.deck.length)) => {
     this.deck = [...this.deck.slice(index), ...this.deck.slice(0, index)];
   };
+  deal = () => this.deck.shift();
   peek = (index = 0) => this.deck[index];
   pull = (index) => {
     const card = this.deck[index];
