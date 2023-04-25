@@ -128,6 +128,17 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('cut_for_hand', (gameId, cutIndex, callback) => {
+    console.log(`Player ${socket.id} is cutting index ${cutIndex} in game ${gameId}`);
+    try {
+      GAMES.set(gameId, GAMES.get(gameId).onCutForHand(socket.id, cutIndex));
+      io.to(gameId).emit('get_game', GAMES.get(gameId));
+    } catch (error) {
+      console.error(error);
+      io.to(socket.id).emit('notification', 'Failed to cut for hand');
+    }
+  });
+
   socket.on('get_game', (id, callback) => {
     console.log(`${socket.id} is pulling game ${id}`);
     const game = GAMES.get(id);

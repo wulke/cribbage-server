@@ -178,4 +178,32 @@ describe('GameState', () => {
       expect(game.crib.length).toStrictEqual(4);
     });
   });
+  describe(GameState.CUT_FOR_HAND, () => {
+    beforeEach(() => {
+      game.onPlayerJoin(PLAYER_1);
+      game.onPlayerReady(PLAYER_1);
+      game.onPlayerJoin(PLAYER_2);
+      game.onPlayerReady(PLAYER_2);
+      game.onGameStart();
+      game.deck.reset();
+      game.onCutForDealer(PLAYER_1, 0);
+      game.onCutForDealer(PLAYER_2, 0);
+      game.onNewHand();
+      game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_1][0]);
+      game.onThrowToCrib(PLAYER_1, game.playerHands[PLAYER_1][0]);
+      game.onThrowToCrib(PLAYER_2, game.playerHands[PLAYER_2][0]);
+      game.onThrowToCrib(PLAYER_2, game.playerHands[PLAYER_2][0]);
+      expect(game.state).toStrictEqual(GameState.CUT_FOR_HAND);
+      expect(game.cut).toBeNull();
+    });
+    it("Let's correct player cut card", async () => {
+      let cutter = game.nextDealer;
+      game.onCutForHand(cutter, 0);
+      expect(game.state).toStrictEqual(GameState.PEGGING);
+    });
+    it('onCutForHand() throws an error if an invalid player tries to cut', async () => {
+      let cutter = game.currentDealer;
+      expect(() => game.onCutForHand(cutter, 0)).toThrowError();
+    });
+  });
 });

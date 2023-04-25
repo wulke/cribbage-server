@@ -8,6 +8,7 @@ const GameState = {
   CUT_FOR_HAND: 'Cut For Hand',
   NEW_HAND: 'New Hand',
   THROW_CRIB: 'Throw Crib',
+  PEGGING: 'Pegging',
 };
 const GameStatus = {
   OPEN: "Open",
@@ -55,6 +56,7 @@ class Game {
     this.currentDealer = null;
     this.nextDealer = null;
     this.crib = [];
+    this.cut = null;
   }
   /** Game-related state updates */
   onGameStart = () => {
@@ -71,6 +73,9 @@ class Game {
     if (!this.players[playerId]) {
       throw new Error(`${playerId} is not a player in game ${this.id}`);
     }
+    if (this.state !==  GameState.CUT_FOR_DEALER) {
+      throw new Error(`Game state is ${this.state}, should be ${GameState.CUT_FOR_DEALER}`);
+    }
     const card = this.deck.pull(cutIndex);
     this.playerCuts[playerId] = card;
     this.#processCutForDealer();
@@ -81,6 +86,7 @@ class Game {
     let player = this.nextDealer;
     const players = Object.keys(this.players);
     let dealIndex = players.indexOf(player);
+    this.cut = null;
     this.#resetCrib();
     this.#resetPlayerHands();
     this.#setNextDealer();
@@ -110,6 +116,9 @@ class Game {
     if (hand.length === 4) {
       throw new Error(`Player ${playerId} has completed throwing to crib`);
     }
+    if (this.state !== GameState.THROW_CRIB) {
+      throw new Error(`Game state is ${this.state}, should be ${GameState.THROW_CRIB}`);
+    }
     // 1) {playerId} has already thrown max cards
     // 3) {playerId} does not have {card} in their hand
     const cardIndex = hand.indexOf(card);
@@ -124,6 +133,27 @@ class Game {
     if (this.#isThrowingToCribComplete()) {
       this.state = GameState.CUT_FOR_HAND;
     }
+    return this;
+  };
+  onCutForHand = (playerId, cutIndex) => {
+    if (!this.players[playerId]) {
+      throw new Error(`Player ${playerId} is not in game ${this.id}`);
+    }
+    if (this.state !== GameState.CUT_FOR_HAND) {
+      throw new Error(`Game state is ${this.state}, should be ${GameState.CUT_FOR_HAND}`);
+    }
+    if (cutIndex < 0 || cutIndex >= this.deck.size()) {
+      throw new Error('Invalid cut index');
+    }
+    if (playerId !== this.nextDealer) {
+      // @todo update to support 3|4 player games
+      throw new Error(`Player ${playerId} is not the cutter`);
+    }
+    this.cut = this.deck.pull(cutIndex);
+    this.state = GameState.PEGGING;
+
+    // @todo check for knobs and update score accordinly
+    
     return this;
   };
   /** Player-related state updates */
