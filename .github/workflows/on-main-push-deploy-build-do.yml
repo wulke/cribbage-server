@@ -1,0 +1,29 @@
+name: Deploy to DigitalOcean Droplet
+'on':
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy cribbage-server app
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.HOST}} # IP address of the digital ocean host
+          username: ${{secrets.USERNAME}} # username of approved user
+          key: ${{secrets.KEY}} # private or public key of the server
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            cd ~/cribbage-server
+            git pull origin master
+            npm install --production
+            pm2 restart node-app
