@@ -19,9 +19,7 @@ jobs:
           username: ${{secrets.USERNAME}} # username of approved user
           key: ${{secrets.KEY}} # private or public key of the server
           script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
             cd ~/cribbage-server
             git pull origin master
-            npm install --production
+            npm install
             pm2 restart node-app
