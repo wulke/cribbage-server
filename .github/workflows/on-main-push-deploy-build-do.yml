@@ -20,6 +20,6 @@ jobs:
           key: ${{secrets.KEY}} # private or public key of the server
           script: |
             cd ~/cribbage-server
-            git pull origin master
+            git pull origin main
             npm install
             pm2 restart node-app
