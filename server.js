@@ -5,7 +5,7 @@ const server = require('http').createServer(app);
 const ws = require('ws');
 const io = require('socket.io')(server, {
   cors: {
-    origin: "*",
+    origin: "http://localhost:5137",
     methods: ["GET","POST"]
   },
   wsEngine: ws.Server
