@@ -14,8 +14,8 @@ const io = require('socket.io')(server, {
 const _ = require('./utils/_');
 const { useDefaultGame } = require('./models/game-state');
 
-app.use(cors());
-app.use(express.json());
+// app.use(cors({ origin: 'http://localhost:5137' }));
+// app.use(express.json());
 
 const PORT = process.env.PORT || 4000;
 const GAMES = new Map();
