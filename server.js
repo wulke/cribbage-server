@@ -1,21 +1,20 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+app.use(cors());
+app.use(express.json());
 const server = require('http').createServer(app);
 const ws = require('ws');
 const io = require('socket.io')(server, {
   cors: {
-    origin: "http://localhost:5137",
-    methods: ["GET","POST"]
+    origin: ["http://localhost:5137", "*"],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   },
   wsEngine: ws.Server
 });
 
 const _ = require('./utils/_');
 const { useDefaultGame } = require('./models/game-state');
-
-app.use(cors({ origin: 'http://localhost:5137' }));
-app.use(express.json());
 
 const PORT = process.env.PORT || 4000;
 const GAMES = new Map();
